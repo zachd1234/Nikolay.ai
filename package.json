@@ -1,0 +1,25 @@
+{
+  "name": "nikolayai",
+  "version": "1.0.0",
+  "description": "## Overview Nikolay.ai is an autonomous agent system designed to automatically set up and operate Sundai Hacks events.",
+  "main": "index.js",
+  "scripts": {
+    "build": "tsc",
+    "send-email": "tsx src/send-email.ts",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "commander": "^14.0.2",
+    "dotenv": "^17.2.3",
+    "nodemailer": "^7.0.10"
+  },
+  "devDependencies": {
+    "@types/node": "^24.9.1",
+    "@types/nodemailer": "^7.0.3",
+    "tsx": "^4.20.6",
+    "typescript": "^5.9.3"
+  }
+}
