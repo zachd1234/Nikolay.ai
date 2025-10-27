@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full bg-gray-900">
+<head>
+    <meta charset="UTF-g">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nikolay.ai | Agent Control</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        .chat-bubble {
+            max-width: 80%;
+            word-wrap: break-word;
+        }
+        .chat-bubble-user {
+            background-color: #4a5568; /* gray-700 */
+        }
+        .chat-bubble-agent {
+            background-color: #2d3748; /* gray-800 */
+        }
+    </style>
+</head>
+<body class="h-full flex flex-col text-gray-100">
+
+    <!-- Header -->
+    <header class="bg-gray-950 p-4 shadow-lg z-10 border-b border-gray-700">
+        <h1 class="text-2xl font-bold text-center text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-500">
+            Nikolay.ai // Agent Control Panel
+        </h1>
+    </header>
+
+    <!-- Main Content -->
+    <div class="flex-1 flex flex-col md:flex-row h-[calc(100vh-68px)]">
+
+        <!-- Control Panel -->
+        <aside class="w-full md:w-1/3 lg:w-1/4 bg-gray-900 border-r border-gray-700 p-6 flex flex-col space-y-6 overflow-y-auto">
+            <div>
+                <h2 class="text-lg font-semibold mb-3 text-purple-300">1. Load Event Data</h2>
+                <div class="space-y-4">
+                    <div>
+                        <label for="event-url" class="block text-sm font-medium text-gray-400 mb-1">Event URL (Partiful)</label>
+                        <input type="text" id="event-url" class="w-full bg-gray-800 border border-gray-600 rounded-lg px-3 py-2 text-gray-100 focus:outline-none focus:ring-2 focus:ring-purple-500" placeholder="https://partiful.com/e/...">
+                    </div>
+                    <button id="load-event-btn" class="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded-lg transition duration-200 shadow-md">
+                        Load & Parse Event
+                    </button>
+                </div>
+            </div>
+
+            <hr class="border-gray-700">
+
+            <div>
+                <h2 class="text-lg font-semibold mb-3 text-purple-300">2. Command Agent</h2>
+                <p class="text-sm text-gray-400 mb-4">Use the chat interface to command the agent. Try these prompts:</p>
+                <ul class="space-y-2">
+                    <li><button class="command-preset text-left text-sm text-purple-400 hover:text-purple-300 w-full bg-gray-800 p-2 rounded-lg">"Generate the AI news for this week"</button></li>
+                    <li><button class="command-preset text-left text-sm text-purple-400 hover:text-purple-300 w-full bg-gray-800 p-2 rounded-lg">"Generate the agenda script"</button></li>
+                    <li><button class="command-preset text-left text-sm text-purple-400 hover:text-purple-300 w-full bg-gray-800 p-2 rounded-lg">"Summarize the event theme"</button></li>
+                </ul>
+            </div>
+
+            <hr class="border-gray-700">
+
+            <div>
+                <h2 class="text-lg font-semibold mb-3 text-purple-300">3. Agent Status</h2>
+                <div id="agent-status" class="bg-gray-800 p-3 rounded-lg text-sm">
+                    <p class="text-gray-400"><span class="font-medium text-gray-200">ID:</span> Nikolay.presenter</p>
+                    <p class="text-gray-400"><span class="font-medium text-gray-200">Status:</span> <span class="text-green-400">IDLE</span></p>
+                    <p class="text-gray-400"><span class="font-medium text-gray-200">Event:</span> <span id="loaded-event-name">None</span></p>
+                </div>
+            </div>
+
+        </aside>
+
+        <!-- Chat Interface -->
+        <main class="flex-1 flex flex-col bg-gray-800">
+            <!-- Chat Messages -->
+            <div id="chat-window" class="flex-1 p-6 space-y-4 overflow-y-auto">
+                <!-- Initial Welcome Message -->
+                <div class="flex justify-start">
+                    <div class="chat-bubble chat-bubble-agent rounded-lg p-3 shadow-md">
+                        <p class="font-bold text-purple-300">Nikolay.ai</p>
+                        <p>Agent online. Load an event URL and give me a command.</p>
+                    </div>
+                </div>
+                
+                <!-- Messages will be dynamically added here -->
+
+            </div>
+
+            <!-- Loading Indicator -->
+            <div id="loading-indicator" class="hidden p-6 flex justify-start items-center space-x-2">
+                <div class="chat-bubble chat-bubble-agent rounded-lg p-3 shadow-md inline-flex items-center">
+                    <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-purple-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    <p class="text-gray-300">Thinking...</p>
+                </div>
+            </div>
+
+            <!-- Chat Input -->
+            <div class="bg-gray-900 p-4 border-t border-gray-700">
+                <div class="flex items-center space-x-3">
+                    <input type="text" id="chat-input" class="flex-1 bg-gray-700 border border-gray-600 rounded-lg px-4 py-2 text-gray-100 focus:outline-none focus:ring-2 focus:ring-purple-500" placeholder="Message Nikolay.ai...">
+                    <button id="send-btn" class="bg-purple-600 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded-lg transition duration-200">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-8.707l-3-3a1 1 0 00-1.414 0l-3 3a1 1 0 001.414 1.414L9 9.414V13a1 1 0 102 0V9.414l1.293 1.293a1 1 0 001.414-1.414z" clip-rule="evenodd" />
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script type="module">
+        // --- Firebase Config (Mock) ---
+        // In a real app, this would be populated
+        const firebaseConfig = {
+          apiKey: "AIza...",
+          authDomain: "...",
+          projectId: "...",
+          storageBucket: "...",
+          messagingSenderId: "...",
+          appId: "..."
+        };
+        // In a real app: import { initializeApp } from 'firebase/app';
+        // In a real app: import { getFirestore, doc, setDoc, getDoc } from 'firebase/firestore';
+        // const app = initializeApp(firebaseConfig);
+        // const db = getFirestore(app);
+
+        // --- Mock State ---
+        let eventData = null;
+        let isAgentThinking = false;
+
+        // --- DOM Elements ---
+        const chatWindow = document.getElementById('chat-window');
+        const chatInput = document.getElementById('chat-input');
+        const sendBtn = document.getElementById('send-btn');
+        const loadEventBtn = document.getElementById('load-event-btn');
+        const eventUrlInput = document.getElementById('event-url');
+        const statusEl = document.getElementById('agent-status').querySelector('.text-green-400');
+        const eventNameEl = document.getElementById('loaded-event-name');
+        const loadingIndicator = document.getElementById('loading-indicator');
+        const commandPresets = document.querySelectorAll('.command-preset');
+
+        // --- Event Listeners ---
+        loadEventBtn.addEventListener('click', handleLoadEvent);
+        sendBtn.addEventListener('click', handleSendMessage);
+        chatInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') handleSendMessage();
+        });
+        commandPresets.forEach(btn => {
+            btn.addEventListener('click', () => {
+                chatInput.value = btn.textContent;
+                handleSendMessage();
+            });
+        });
+
+        // --- Functions ---
+        
+        async function handleLoadEvent() {
+            const url = eventUrlInput.value;
+            if (!url) {
+                addMessageToChat("Error: Please enter a URL.", "agent");
+                return;
+            }
+            
+            setLoading(true, "Parsing event...");
+            addMessageToChat(`Loading event from: ${url}`, "user");
+
+            // --- MOCK BACKEND CALL ---
+            // In a real app, this would be:
+            // await fetch('/api/load-event', { method: 'POST', body: JSON.stringify({ url }) });
+            // And your backend would scrape and save to Firestore.
+            await new Promise(res => setTimeout(res, 1500)); // Simulate network delay
+
+            // Mocked data based on your prompt
+            const mockData = {
+                title: "Sundai Hack - Fully Autonomous Companies",
+                theme: "Fully Autonomous Companies and AI Agents",
+                schedule: "10:00 Intro, 10:15 Lightning talks, 11:00 Mission pitching, 14:00 Lunch, 20:00 Checkup #2"
+            };
+            eventData = mockData;
+            
+            // In a real app: await setDoc(doc(db, "events", "latest"), eventData);
+            // --- END MOCK ---
+
+            setLoading(false);
+            eventNameEl.textContent = eventData.title;
+            addMessageToChat(`Event Loaded: **${eventData.title}**. Theme is **"${eventData.theme}"**. I'm ready for commands.`, "agent");
+        }
+
+        async function handleSendMessage() {
+            const message = chatInput.value.trim();
+            if (!message || isAgentThinking) return;
+
+            addMessageToChat(message, "user");
+            chatInput.value = "";
+            setLoading(true);
+
+            // Mock backend processing
+            await new Promise(res => setTimeout(res, 500));
+            
+            let agentResponse = "";
+
+            if (!eventData) {
+                agentResponse = "Please load an event URL first before giving me commands.";
+            } else if (message.toLowerCase().includes("news")) {
+                agentResponse = await getMockAINews(eventData.theme);
+            } else if (message.toLowerCase().includes("agenda")) {
+                agentResponse = await getMockAgendaScript(eventData.schedule);
+            } else if (message.toLowerCase().includes("theme")) {
+                agentResponse = `The theme for this week is **"${eventData.theme}"**. My understanding is we're building organizations that run themselves—AI managing listings, a venture studio that ships products, or even the orchestration layers to make it possible.`;
+            } else {
+                agentResponse = "I'm not sure how to handle that command. Try one of the presets, like 'Generate the AI news'.";
+            }
+
+            setLoading(false);
+            addMessageToChat(agentResponse, "agent");
+        }
+
+        function addMessageToChat(message, sender) {
+            const messageWrapper = document.createElement('div');
+            messageWrapper.classList.add('flex', sender === 'user' ? 'justify-end' : 'justify-start');
+            
+            const messageBubble = document.createElement('div');
+            messageBubble.classList.add('chat-bubble', 'rounded-lg', 'p-3', 'shadow-md');
+            messageBubble.classList.add(sender === 'user' ? 'chat-bubble-user' : 'chat-bubble-agent');
+
+            if (sender === 'agent') {
+                const agentName = document.createElement('p');
+                agentName.classList.add('font-bold', 'text-purple-300');
+                agentName.textContent = 'Nikolay.ai';
+                messageBubble.appendChild(agentName);
+            }
+
+            // Simple Markdown-to-HTML
+            let formattedMessage = message.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+            formattedMessage = formattedMessage.replace(/\n/g, '<br>');
+
+            const messageContent = document.createElement('p');
+            messageContent.innerHTML = formattedMessage;
+            messageBubble.appendChild(messageContent);
+            
+            messageWrapper.appendChild(messageBubble);
+            chatWindow.appendChild(messageWrapper);
+            chatWindow.scrollTop = chatWindow.scrollHeight;
+        }
+
+        function setLoading(isLoading, text = "IDLE") {
+            isAgentThinking = isLoading;
+            if (isLoading) {
+                statusEl.textContent = text || "THINKING";
+                statusEl.classList.remove('text-green-400');
+                statusEl.classList.add('text-yellow-400', 'animate-pulse');
+                loadingIndicator.classList.remove('hidden');
+                chatWindow.scrollTop = chatWindow.scrollHeight;
+            } else {
+                statusEl.textContent = "IDLE";
+                statusEl.classList.remove('text-yellow-400', 'animate-pulse');
+                statusEl.classList.add('text-green-400');
+                loadingIndicator.classList.add('hidden');
+            }
+        }
+
+        // --- MOCK API FUNCTIONS (Simulating backend calls) ---
+        // In a real app, these functions would live on your backend and
+        // would call the Gemini API with search grounding.
+
+        async function getMockAINews(theme) {
+            setLoading(true, "Searching AI news...");
+            // This is where you'd call your backend, which calls:
+            // gemini.generateContent({ ..., tools: [{ google_search: {} }] })
+            
+            // We use the real search results from the thought trace to create a realistic mock.
+            await new Promise(res => setTimeout(res, 2500)); // Simulate API call
+            
+            return `Alright, here's the alpha on AI news for **"${theme}"**:
+
+**1. OpenAI Just Launched AgentKit:** This is huge. They dropped a new toolkit for building and *visually orchestrating* multi-agent workflows. It includes an "Agent Builder" canvas and "ChatKit" for UIs. It's a direct move to solve the orchestration mess everyone here is hacking on.
+
+**2. The "Year of the Agent" is Real (with a catch):** IBM and Gartner are both saying 2025 is the "year of agentic exploration." But they're warning about the hype. The consensus is we're moving from single "chatbots" to "orchestrated agent systems," but true autonomous reasoning is still a major challenge.
+
+**3. Meta's Chief AI Scientist on Humanoid Robots:** Yann LeCun just warned that most humanoid robot companies are in a "bubble." He said they're all building hardware but "have no idea" how to make them smart enough to be *generally* useful, arguing they need "world models" trained on video, not just text.
+
+That's the landscape. Let's go build what's missing.`;
+        }
+
+        async function getMockAgendaScript(schedule) {
+            setLoading(true, "Generating script...");
+            // This is where you'd call your backend, which calls:
+            // gemini.generateContent({ systemPrompt, userQuery: schedule })
+            
+            await new Promise(res => setTimeout(res, 1500)); // Simulate API call
+
+            return `Hey everyone, welcome to Sundai! Here's the plan for today.
+
+We'll kick off with **Intro for Newcomers** at 10:00, followed by **Lightning Talks** at 10:15 where we'll dive into today's theme.
+
+At 11:00, it's **Mission Pitching**. This is your chance to share your idea or join a team.
+
+We'll have **Lunch and our first Checkup** at 14:00 (2 PM) to see where everyone's at.
+
+Finally, **Checkup #2** is at 20:00 (8 PM). That's when we'll prep for final demos.
+
+Our mission is to build and ship. Let's push the envelope. Good luck.`;
+        }
+    </script>
+
+</body>
+</html>
